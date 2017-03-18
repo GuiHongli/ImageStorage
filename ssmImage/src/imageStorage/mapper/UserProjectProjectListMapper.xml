@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--使用了3个表，user，project，projectList  -->
+<mapper namespace="imageStorage.mapper.UserProjectProjectListMapper" >
+  
+  <resultMap  id="ShowDataMap" type="imageStorage.entity.ShowData">
+  	<!--这个地方没有这个表，也就没有主键，不知还要不要用id  -->
+  	<result column="user_id" property="userId" jdbcType="CHAR" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    <result column="sex" property="sex" jdbcType="INTEGER" />
+  	<result column="department_name" property="departmentName" jdbcType="VARCHAR" />
+  	<result column="project_name" property="projectName" jdbcType="VARCHAR" />
+  	<result column="project_position" property="projectPosition" jdbcType="VARCHAR" />
+  	<result column="time" property="time" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="query_items">
+  	User.user_name,User.user_id,User.sex,
+				department.department_name,
+				project.project_name,project.project_position,
+				projectlist.time,projectlist.image_path
+  </sql>
+  <sql id="query_tables">
+  	User ,department,project,projectlist
+  </sql>
+  <sql id="query_nessary_condition">
+  	User.user_id=projectlist.user_id
+		AND project.project_id=projectlist.project_id
+  </sql>
+  <!-- 定义sql片段,需要使用if判断 -->
+  <sql id="query_user_by_projectName">
+  	<if test="project!=null">
+  		<if test="project.projectName!=null and project.projectName!=''">
+		AND
+		User.user_id in
+			(SELECT projectlist.user_id From projectlist
+			WHERE  projectlist.project_id IN
+			(SELECT project.project_id FROM project
+		WHERE project.project_name='${project.projectName}'))
+  		</if>
+  	</if>
+  	
+  </sql>
+  <!-- 根据体检项目的名称，查看体检的客户信息 
+  		parameterType:最好使用包装对象类型
+  		resultType:最好使用基本实体的扩展类型
+  -->
+  <select id="findUserByProjectName" parameterType="FindUserVo" resultMap="ShowDataMap">
+  	SELECT <include refid="query_items"/>
+  	FROM <include refid="query_tables"/>
+  	<where>
+  		<include refid="query_nessary_condition"/>
+  		<include refid="query_user_by_projectName"/>				  	
+  	</where> 	
+  </select>
+  
+  <select id="findUserCountByProjectName" parameterType="FindUserVo" resultType="int">
+  	SELECT Count(*) 
+  	FROM <include refid="query_tables"/> 
+  	<where>
+  		<include refid="query_nessary_condition"/>
+  		<include refid="query_user_by_projectName"/>				  	
+  	</where> 	
+  </select>
+</mapper>
