@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration> 
+ 	<!--全局的setting配置，根据需要再加  -->
+	<!-- 配置别名，批量扫描 -->
+	<typeAliases> 
+	<package name="imageStorage.entity"/>
+	</typeAliases>
+	<!-- 和spring整合后，使用的是spring的MapperScannerConfigurer 
+		这里不需要再配置加载mapper接口
+		规则：mapper.xml和mapper.java文件同名且在一个目录
+	-->
+	
+</configuration>

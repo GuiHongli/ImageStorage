@@ -1,0 +1,64 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.2.xsd 
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+	<!--加载 db.properties文件中的内容
+		文件中属性的命名要特别，使用.
+	-->
+	<context:property-placeholder location="classpath:db.properties"/>
+	
+	<!-- 数据源，使用dbcp -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name= "username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="maxActive" value="10" />
+		<property name="maxIdle" value="5" />
+	</bean>
+	<!--配置SqlSessionFactory  -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 需要加载Mybatis的配置文件 -->
+		<property name="configLocation" value="classpath:mybatis/sqlMapConfig.xml"></property>
+		<!--数据源
+		 name:所要求配置的属性名称，是固定的
+		 ref：是自己配置的一个具体bean的id
+		 -->
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<!--mapper的批量扫描  
+	从mapper的包中，扫描出mapper的接口，
+	自动创建代理对象，并将这些对象注入注册到spring容器中
+	扫描到的mapper接口的bean的id为mapper类名，首字母小写
+	
+	MapperScannerConfigurer:mapper的扫描器
+	遵循规范：mapper.xml和mapper.java的名称一致，而且要在同一个包内	
+	-->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 指定要扫描的包名
+			如果扫描多个包，不能使用通配符
+			每个包子健使用半角逗号分隔
+		 -->
+		<property name="basePackage" value="imageStorage.mapper"></property>
+		<!--
+		此处使用了sqlSessionFactoryBeanName
+		没有使用sqlSessionFactory：
+		因为如果用了它，加载配置文件的组件不起作用则前面加载db文件就会不起作用
+		若用了它，它会先于加载配置文件执行，导致连接不上数据库，不对，所以不用
+		  -->
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+	</bean>
+</beans>
+		
